@@ -4,6 +4,7 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
+#include <string>
 
 #define snake_symbol '#'
 #define fruit_symbol '0'
@@ -11,10 +12,10 @@
 #define map_scale_Y 20
 #define map_scale_X 41
 
-#define arrow_LEFT 75
-#define arrow_RIGHT 77
-#define arrow_UP 72
-#define arrow_DOWN 80
+#define arrow_LEFT 37
+#define arrow_RIGHT 39
+#define arrow_UP 38
+#define arrow_DOWN 40
 
 using namespace std;
 
@@ -37,7 +38,7 @@ public:
 
     ~Snake() {}
 
-    void add(int x, int y) {
+    void add() {
         Snake* temp = this;
 
         while (temp->next_Snake != nullptr) {
@@ -76,7 +77,7 @@ void DrawMap(vector<vector<char>> map, int totalFruits) {
         str += "\n";
     }
 
-    str += "Score: \n";
+    str += "Score: " + to_string(totalFruits) + "\n";
     cout << str << flush;
 }
 
@@ -101,14 +102,20 @@ void SpawnFruit(vector<vector<char>>& map) {
         }
     }
 
-    int randomPlaceX = rand() % (map_scale_X - 1);
-    int randomPlaceY = rand() % (map_scale_Y);
+    int randomPlaceX = rand() % (map_scale_X - 2);
+    int randomPlaceY = rand() % (map_scale_Y - 1);
+
+    while (map[randomPlaceY][randomPlaceX] == snake_symbol) {
+        randomPlaceX = rand() % (map_scale_X - 2);
+        randomPlaceY = rand() % (map_scale_Y - 1);
+    }
+
     map[randomPlaceY][randomPlaceX] = fruit_symbol;
 }
 
 Snake* SpawnSnake(vector<vector<char>>& map) {
-    int randomPlaceX = rand() % (map_scale_X - 1);
-    int randomPlaceY = rand() % (map_scale_Y);
+    int randomPlaceX = rand() % (map_scale_X - 2);
+    int randomPlaceY = rand() % (map_scale_Y - 1);
 
     Snake* snake = new Snake(randomPlaceX, randomPlaceY);
 
@@ -118,7 +125,51 @@ Snake* SpawnSnake(vector<vector<char>>& map) {
 }
 
 void MoveSnake(vector<vector<char>>& map, int KeyPressedCode, int* p_totalFruits, Snake* p_snake) {
+    vector<int> curr_pos = p_snake->get_curr_position();
 
+    switch (KeyPressedCode) {
+    case arrow_DOWN:
+        curr_pos[1] += 1; break;
+    case arrow_UP:
+        curr_pos[1] -= 1; break;
+    case arrow_RIGHT:
+        curr_pos[0] += 1; break;
+    case arrow_LEFT:
+        curr_pos[0] -= 1; break;
+    default: break;
+    }
+
+    if (curr_pos[0] == map_scale_X - 1) { curr_pos[0] = 0; }
+    if (curr_pos[0] < 0) { curr_pos[0] = map_scale_X - 2; }
+    if (curr_pos[1] == map_scale_Y) { curr_pos[1] = 0; }
+    if (curr_pos[1] < 0) { curr_pos[1] = map_scale_Y; }
+
+    if (map[curr_pos[1]][curr_pos[0]] == snake_symbol) { game = false; return; }
+    if (map[curr_pos[1]][curr_pos[0]] == fruit_symbol) { p_snake->add(); *p_totalFruits = *p_totalFruits + 1; map[curr_pos[1]][curr_pos[0]] = ' '; }
+    p_snake->set_new_position(curr_pos[0], curr_pos[1]);
+
+    // clear old snake on map
+    for (int y = 0; y < map_scale_Y; y++) {
+        for (int x = 0; x < map_scale_X; x++) {
+            if (map[y][x] == snake_symbol) {
+                map[y][x] = ' ';
+            }
+        }
+    }
+
+    // draw new snake on map
+    Snake* temp = p_snake;
+    while (temp != nullptr) {
+        for (int y = 0; y < map_scale_Y; y++) {
+            for (int x = 0; x < map_scale_X; x++) {
+                if (x == temp->get_curr_position()[0] && y == temp->get_curr_position()[1]) {
+                    map[y][x] = snake_symbol;
+                }
+            }
+        }
+
+        temp = temp->next_Snake;
+    }
 }
 
 int main()
@@ -128,7 +179,7 @@ int main()
 
     vector<vector<char>> map(map_scale_Y, vector<char>(map_scale_X));
 
-    int KeyPressedCode = 0;
+    int KeyPressedCode = arrow_DOWN;
     vector<int> keysCode = { arrow_UP , arrow_LEFT , arrow_DOWN , arrow_RIGHT };
 
     int totalFruits = 0;
@@ -138,7 +189,7 @@ int main()
     SpawnFruit(map);
     DrawMap(map, totalFruits);
 
-    KeyPressedCode = _getch();
+    _getch();
 
     while (game) {
 
@@ -149,7 +200,7 @@ int main()
         SpawnFruit(map);
         MoveSnake(map, KeyPressedCode, &totalFruits, snake);
         DrawMap(map, totalFruits);
-        Sleep(150);
+        Sleep(150 - totalFruits);
     }
 
     cout << "GAME OVER!" << endl;
