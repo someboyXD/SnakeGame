@@ -7,6 +7,7 @@
 #include <string>
 
 #define snake_symbol '#'
+#define snake_head_symbol '%'
 #define fruit_symbol '0'
 
 #define map_scale_Y 20
@@ -28,12 +29,14 @@ private:
 
 public:
     Snake* next_Snake;
+    bool isHead = false;
 
-    Snake(int x, int y) {
+    Snake(int x, int y, bool _isHead) {
         curr_pos[0] = x;
         curr_pos[1] = y;
 
         next_Snake = nullptr;
+        isHead = _isHead;
     }
 
     ~Snake() {}
@@ -46,7 +49,7 @@ public:
         }
 
         if (temp->next_Snake == nullptr) {
-            temp->next_Snake = new Snake(temp->prev_pos[0], temp->prev_pos[1]);
+            temp->next_Snake = new Snake(temp->prev_pos[0], temp->prev_pos[1], false);
         }
     }
 
@@ -117,7 +120,7 @@ Snake* SpawnSnake(vector<vector<char>>& map) {
     int randomPlaceX = rand() % (map_scale_X - 2);
     int randomPlaceY = rand() % (map_scale_Y - 1);
 
-    Snake* snake = new Snake(randomPlaceX, randomPlaceY);
+    Snake* snake = new Snake(randomPlaceX, randomPlaceY, true);
 
     map[snake->get_curr_position()[1]][snake->get_curr_position()[0]] = snake_symbol;
 
@@ -151,7 +154,7 @@ void MoveSnake(vector<vector<char>>& map, int KeyPressedCode, int* p_totalFruits
     // clear old snake on map
     for (int y = 0; y < map_scale_Y; y++) {
         for (int x = 0; x < map_scale_X; x++) {
-            if (map[y][x] == snake_symbol) {
+            if (map[y][x] == snake_symbol or map[y][x] == snake_head_symbol) {
                 map[y][x] = ' ';
             }
         }
@@ -163,7 +166,12 @@ void MoveSnake(vector<vector<char>>& map, int KeyPressedCode, int* p_totalFruits
         for (int y = 0; y < map_scale_Y; y++) {
             for (int x = 0; x < map_scale_X; x++) {
                 if (x == temp->get_curr_position()[0] && y == temp->get_curr_position()[1]) {
-                    map[y][x] = snake_symbol;
+                    if (temp->isHead) {
+                        map[y][x] = snake_head_symbol;
+                    }
+                    else {
+                        map[y][x] = snake_symbol;
+                    }
                 }
             }
         }
@@ -174,7 +182,7 @@ void MoveSnake(vector<vector<char>>& map, int KeyPressedCode, int* p_totalFruits
 
 int main()
 {
-    system("mode con cols=41 lines=21");
+    system("mode con cols=41 lines=22");
     srand(time(0));
 
     vector<vector<char>> map(map_scale_Y, vector<char>(map_scale_X));
