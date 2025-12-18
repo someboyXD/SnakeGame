@@ -2,7 +2,7 @@
 
 ## Controls:
 * ← - move left
-8 → - move right
+* → - move right
 * ↑ - move up
 * ↓ - move down
 
