@@ -8,7 +8,7 @@
 
 ## Information:
 * 0 - fruit
-* # - snake body
+* \# - snake body
 * % - snake head
 * X - snake is dead
 
