@@ -170,11 +170,11 @@ void MoveSnake(vector<vector<char>>& map, int KeyPressedCode, int* p_totalFruits
     default: break;
     }
 
-    // no borders logistic
-    if (curr_pos[0] == map_scale_X - 1) { curr_pos[0] = 0; }
-    if (curr_pos[0] < 0) { curr_pos[0] = map_scale_X - 1; }
-    if (curr_pos[1] == map_scale_Y) { curr_pos[1] = 0; }
-    if (curr_pos[1] < 0) { curr_pos[1] = map_scale_Y - 1; }
+    // borders logiс
+    if (curr_pos[0] == map_scale_X - 1) { game_over(map); return; }
+    if (curr_pos[0] < 0) { game_over(map); return; }
+    if (curr_pos[1] == map_scale_Y) { game_over(map); return; }
+    if (curr_pos[1] < 0) { game_over(map); return; }
 
     // if the snake's body is in front of it, then we launch a "game over"
     if (map[curr_pos[1]][curr_pos[0]] == snake_body_symbol) { game_over(map); return; }
